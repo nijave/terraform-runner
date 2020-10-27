@@ -12,8 +12,8 @@ import typing
 import contrib.root
 import terraform
 
-logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 # logging.getLogger("non_blocking_process").setLevel(logging.WARNING)
 
 
@@ -236,6 +236,7 @@ def handle_project_interaction(project, process, cred_helper):
                     "Apply failed. Would you like to continue?"
                 ):
                     raise RuntimeError("Terraform apply failed")
+                return
             elif response == "n":
                 return
     else:

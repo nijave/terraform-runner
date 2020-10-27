@@ -38,8 +38,10 @@ class RoleToProfileMapping(CredentialHelper):
         with open(project / "main.tf", "r") as f:
             contents = f.read()
         arns = re.findall(r'\s*role_arn\s+=\s+"(.*?)"', contents)
-        if len(set(arns)) != 1:
-            raise ValueError("Expected to find exactly 1 role arn")
+        # if len(set(arns)) != 1:
+        #     raise ValueError(f"Expected to find exactly 1 role arn {project}")
+        if len(arns) < 1:
+            raise ValueError(f"Couldn't find role arn for project {project}")
         return arns[0].split(":")[4]
 
     def __init__(self, account_id_to_profile_map: typing.Dict[str, str]):
