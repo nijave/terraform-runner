@@ -144,7 +144,12 @@ class ProjectFinder:
 
             details = json.loads(
                 subprocess.check_output(
-                    [TERRAFORM_CONFIG_INSPECTOR, "--json", module_path,], text=True,
+                    [
+                        TERRAFORM_CONFIG_INSPECTOR,
+                        "--json",
+                        module_path,
+                    ],
+                    text=True,
                 )
             )
 
@@ -231,7 +236,9 @@ class ChangeFinder:
 
     def git_diff(
         self,
-        target_branch: str = "origin/master",
+        target_branch: str = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "origin/HEAD"], text=True
+        ).strip(),  # TODO decide if putting this here is a good idea
         git_terraform_directory: pathlib.Path = pathlib.Path("terraform/"),
     ) -> typing.List[pathlib.Path]:
         """
@@ -244,7 +251,14 @@ class ChangeFinder:
 
         # All changes
         git_results = subprocess.check_output(
-            ["git", "diff", "--name-only", "--right-only", target_branch],
+            [
+                "git",
+                "diff",
+                "--name-only",
+                f"{target_branch}...",
+                "--",
+                self._project_finder.base_path.resolve(),
+            ],
             cwd=self._project_finder.base_path,
             text=True,
         )
