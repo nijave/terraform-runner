@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
+import logging
 import pathlib
+import subprocess
 import time
+import typing
 
 import click
-import logging
-
-# Root specific bits
 import munch
-import typing
 
 import contrib.root
 import terraform
@@ -15,6 +14,8 @@ import terraform
 # logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.WARNING)
 # logging.getLogger("non_blocking_process").setLevel(logging.WARNING)
+
+REPO_PATH = pathlib.Path("~/code/root-infrastructure/terraform").expanduser()
 
 
 def terrify_args(func: typing.Callable[[click.Context, str, str], None]):
@@ -101,11 +102,16 @@ filter_git_changes = click.option(
     expose_value=False,
 )
 
+default_git_branch = subprocess.check_output(
+    ["git", "rev-parse", "--abbrev-ref", "origin/HEAD"],
+    cwd=REPO_PATH,
+    text=True,
+).strip()
 filter_git_changes_master = click.option(
     "-c",
     "git_changes",
-    flag_value="origin/master",
-    help="Git diff current working tree to origin/master",
+    flag_value=default_git_branch,
+    help=f"Git diff current working tree to {default_git_branch}",
     callback=git_changes,
     expose_value=False,
 )
@@ -174,7 +180,7 @@ filter_options = add_options(
 def cli(ctx):
     ctx.ensure_object(munch.Munch)
     finder = terraform.project.ProjectFinder(
-        pathlib.Path("~/code/root-infrastructure/terraform").expanduser(),
+        REPO_PATH,
         path_parser=terraform.project.project_environment_region_parser,
     )
     finder.sort_projects()
